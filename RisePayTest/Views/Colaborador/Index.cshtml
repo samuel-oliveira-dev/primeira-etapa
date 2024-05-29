@@ -1,0 +1,96 @@
+﻿@model Colaborador
+@{
+    Layout = "_Layout";
+}
+
+<a class="btn btn-success" id="create-button" data-bs-toggle="modal" data-bs-target="#modal-global">Novo</a>
+<table id="table-colaboradores" class="table table-striped">
+    <thead>
+        <tr>
+            <td>
+                @Html.DisplayNameFor(model => model.Id)
+            </td>
+            <td>
+                @Html.DisplayNameFor(model => model.Nome)
+            </td>
+            <td>
+                @Html.DisplayNameFor(model => model.Telefone)
+            </td>
+            <td>
+                @Html.DisplayNameFor(model => model.Email)
+            </td>
+            <td>
+                Categoria
+            </td>
+        </tr>
+    </thead>
+</table>
+
+
+
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            table = $("#table-colaboradores").DataTable({
+                // Design Assets
+                stateSave: true,
+                autoWidth: true,
+                // ServerSide Setups
+                processing: true,
+                serverSide: true,
+                // Paging Setups
+                paging: true,
+                lengthMenu: [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "All"]],
+                pageLength: 10,
+                pagingType: "full_numbers",
+
+                dom: 'lBfrtip',
+                // Searching Setups
+                searching: { regex: true },
+                // Ajax Filter
+                ajax: {
+                    url: '@Url.Action("LoadTable", "Colaborador")',
+                    type: "POST",
+
+
+                    data: function (d) {
+                        return d;
+                    }
+                },
+                // Columns Setups
+                columns: [
+                    { data: "id"},
+                    { data: "nome" },
+                    { data: "telefone" },
+                    { data: "email"},
+                    { data: "categoria" },
+                ]
+                // Column Definitions
+                , columnDefs: [
+
+                ],
+                createdRow: function (row, data, index) {
+                    $(row).attr('data-id', row.id)
+                    $(row).addClass('table-row')
+                }
+
+            });
+
+
+            $('.table-row').click(function(){
+                let id = $(this).data('id')
+
+            })
+
+            $('#create-button').click(function () {
+                loadModal('/Colaborador/Create')
+            })
+
+        })
+
+        
+
+    </script>
+}
