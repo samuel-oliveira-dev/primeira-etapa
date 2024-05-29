@@ -3,8 +3,8 @@
     Layout = "_Layout";
 }
 
-<a class="btn btn-success" id="create-button" data-bs-toggle="modal" data-bs-target="#modal-global">Novo</a>
-<table id="table-colaboradores" class="table table-striped">
+<a class="btn btn-success my-2" id="create-button" data-bs-toggle="modal" data-bs-target="#modal-global">Cadastrar</a>
+<table id="table-colaboradores" class="table table-hover">
     <thead>
         <tr>
             <td>
@@ -33,8 +33,16 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            table = $("#table-colaboradores").DataTable({
+            function setCloseEvents(table) {
+                $('.close-table').click(function () {
+                    console.log('ok')
+                    table.draw()
+                })
+            }
+            
+            var table = $("#table-colaboradores").DataTable({
                 // Design Assets
+                language: ptBr,
                 stateSave: true,
                 autoWidth: true,
                 // ServerSide Setups
@@ -65,28 +73,41 @@
                     { data: "nome" },
                     { data: "telefone" },
                     { data: "email"},
-                    { data: "categoria" },
+                    { data: "categoria", render: function (row, data, index) { return index.cargo.nome } },
                 ]
                 // Column Definitions
                 , columnDefs: [
 
                 ],
                 createdRow: function (row, data, index) {
-                    $(row).attr('data-id', row.id)
-                    $(row).addClass('table-row')
+                    let tr = $(row)
+                    tr.attr('data-id', data.id)
+                    tr.addClass('table-row')
+                    tr.addClass('clickable')
+                    tr.attr('data-bs-toggle', 'modal')
+                    tr.attr('data-bs-target', '#modal-global')
+                    
                 }
 
             });
 
+            $('#table-colaboradores').on('draw.dt', function () {
+                $('.table-row').click(function () {
+                    let id = $(this).data('id')
+                    loadModal(`/Colaborador/Edit/${id}`, arg => setCloseEvents(table))
 
-            $('.table-row').click(function(){
-                let id = $(this).data('id')
+                })
+            });
 
-            })
+
+            
 
             $('#create-button').click(function () {
-                loadModal('/Colaborador/Create')
+                loadModal('/Colaborador/Create', arg=>setCloseEvents(table))
             })
+
+            
+            
 
         })
 

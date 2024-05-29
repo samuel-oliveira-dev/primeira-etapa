@@ -20,3 +20,19 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.clickable {
+    cursor:pointer;
+}
+
+.dt-length{
+    margin-bottom: 0.5rem !important;
+}
+
+.modal.fade {
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.modal-backdrop.fade {
+    opacity: 0 !important;
+}

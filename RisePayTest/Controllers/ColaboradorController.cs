@@ -27,18 +27,16 @@ namespace RisePayTest.Controllers
         {
             var searchBy = dtParameters.Search?.Value;
 
-            // if we have an empty search then just order the results by Id ascending
             var orderCriteria = "Id";
             var orderAscendingDirection = true;
 
             if (dtParameters.Order != null)
             {
-                // in this example we just default sort on the 1st column
                 orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
                 orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
             }
 
-            var result = (await _context.Colaboradores.ToListAsync()).AsQueryable();
+            var result = (await _context.Colaboradores.Include(c => c.Cargo).ToListAsync()).AsQueryable();
 
             if (!string.IsNullOrEmpty(searchBy))
             {
@@ -47,9 +45,13 @@ namespace RisePayTest.Controllers
 
             result = orderAscendingDirection ? result.OrderByDynamic(orderCriteria, DtOrderDir.Asc) : result.OrderByDynamic(orderCriteria, DtOrderDir.Desc);
 
-            // now just get the count of items (without the skip and take) - eg how many could be returned with filtering
             var filteredResultsCount = result.Count();
             var totalResultsCount = await _context.Colaboradores.CountAsync();
+
+            if(dtParameters.Length == -1)
+            {
+                dtParameters.Length = filteredResultsCount;
+            }
 
             return Json(new DtResult<Colaborador>
             {
@@ -66,6 +68,51 @@ namespace RisePayTest.Controllers
         {
             ViewData["Cargos"] = await _context.Cargos.ToListAsync();
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([Bind("Nome,Email,Telefone,IdCargo")] Colaborador colaborador)
+        {
+            ViewData["Cargos"] = await _context.Cargos.ToListAsync();
+
+            ModelState.Remove("Cargo");
+            if (!ModelState.IsValid)
+            {
+                return View(colaborador);
+            }
+
+            _context.Add(colaborador);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        public async Task<IActionResult> Edit(int id)
+        {
+            ViewData["Cargos"] = await _context.Cargos.ToListAsync();
+            var colaborador = await _context.Colaboradores.FindAsync(id);
+            if(colaborador == null)
+            {
+                return NotFound();
+            } 
+            return View(colaborador);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit([Bind("Id,Nome,Email,Telefone,IdCargo")] Colaborador colaborador)
+        {
+            ModelState.Remove("Cargo");
+            if (!ModelState.IsValid)
+            {
+                
+                return View(colaborador);
+            }
+
+            _context.Update(colaborador);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+
+
+
         }
 
         private async Task GenerateCargos()
